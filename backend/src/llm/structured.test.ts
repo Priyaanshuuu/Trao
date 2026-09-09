@@ -40,6 +40,6 @@ test("retries transient Gemini responses and returns generated text", async () =
 });
 
 test("reports missing provider configuration", async () => {
-  const client = new GeminiClient({ retries: 1 });
+  const client = new GeminiClient({ apiKey: "", retries: 1 });
   await assert.rejects(() => client.generateText("Return JSON"), (error: unknown) => error instanceof LlmError && error.code === "LLM_NOT_CONFIGURED");
 });
