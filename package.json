@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "evaluate": "npm --prefix backend run evaluate --"
+  },
   "dependencies": {
     "next-auth": "^5.0.0-beta.32"
   }

@@ -171,3 +171,49 @@ Some test cases will produce visibly smaller kits.
 Benefit
 
 Higher factual integrity and better behaviour on adversarial/edge cases.
+
+11. In-process coordinator vs durable queue
+
+Decision
+
+Use an in-process background coordinator backed by MongoDB status records for the assignment deployment.
+
+Why
+
+The project has a small expected audience and already requires MongoDB. Avoiding Redis keeps the live deployment inexpensive and easier to explain while still allowing the API to return immediately and the UI to show `pending`, `running`, `completed`, and `failed` states.
+
+Trade-off
+
+An in-flight job is interrupted if the backend process restarts. It also does not provide queue-level concurrency controls, delayed retries, or a dedicated job dashboard.
+
+Alternative: MongoDB worker
+
+A separate worker can claim pending MongoDB records atomically and add lock expiry/retry fields. This improves restart behavior without Redis, but requires more custom coordination code.
+
+Alternative: BullMQ + Redis
+
+BullMQ with managed Redis is the stronger production option when there are many users, multiple API instances, or strict job durability requirements. It adds Redis infrastructure, worker deployment, queue retry policy, and another set of secrets. It can replace only the coordinator; the shared pipeline remains unchanged.
+
+12. Adaptive polling vs push updates
+
+Decision
+
+Use adaptive polling for generation status.
+
+Why
+
+It works on ordinary HTTP deployments and requires no WebSocket or Server-Sent Events infrastructure. The interval slows over time, pauses for hidden tabs, and stops after a maximum duration.
+
+Trade-off
+
+There are still periodic status requests while generation is active. Push updates would reduce requests but add connection lifecycle and deployment complexity that is not justified for the assignment audience.
+
+13. Mongoose ObjectId vs UUID kit IDs
+
+Decision
+
+Use Mongoose's generated ObjectId for the MongoDB document `_id`.
+
+Why
+
+The default schema expects ObjectId values, and the existing routes can serialize them as strings for URLs. Assigning a UUID directly to `_id` causes a cast validation error unless the schema is redesigned around string IDs.

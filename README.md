@@ -66,6 +66,41 @@ Create .env from .env.example and provide the required credentials.
 
 Start the application using the project scripts documented by the implementation.
 
+Local services
+
+Start MongoDB locally or use a MongoDB Atlas connection string. Then start the backend and frontend in separate terminals:
+
+```bash
+cd backend
+npm run dev
+```
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+For GitHub OAuth local development, use this callback URL in the GitHub OAuth App:
+
+`http://localhost:3000/api/auth/callback/github`
+
+The same `AUTH_INTERNAL_SECRET` must be present in both frontend and backend environment files. MongoDB URI credentials must percent-encode reserved characters such as `@`, `#`, `%`, `/`, `?`, and `:`. For example, `Priyanshu@2004` becomes `Priyanshu%402004`.
+
+Live assignment deployment
+
+Deploy the frontend to Vercel and the backend as a persistent Node service on Render or Railway. Use MongoDB Atlas for persistence and configure the Gemini API key on the backend. Set the frontend `BACKEND_URL` to the deployed backend URL and set the backend `FRONTEND_ORIGIN` to the deployed frontend URL.
+
+The live assignment uses the in-process generation coordinator instead of Redis. This is intentionally simpler for a small recruiter audience. A backend restart can interrupt an active generation; BullMQ with Redis or a durable MongoDB worker is the upgrade path if stronger job recovery is required.
+
+Known limitations
+
+- Public interview discussion search is not configured yet; the kit reports that gap honestly.
+- In-process generation is not durable across backend restarts.
+- The current frontend focuses on kit creation, status, summary, schedule, and flashcard practice; broader section-level editing and regeneration can be added later.
+- A persistent backend service is recommended because sleeping services can interrupt long AI generation.
+
 Evaluation command
 
 The repository must expose the exact batch entry point required by the assessment:
@@ -73,6 +108,10 @@ The repository must expose the exact batch entry point required by the assessmen
 npm run evaluate -- --input <cases.json> --output <kits.json>
 
 The evaluator uses the same retrieval, generation, validation, coverage, and scheduling pipeline as the web application.
+
+The shared pipeline runs requirement extraction, company research, question generation, one bounded coverage-repair pass, flashcard generation, deterministic scheduling, and final kit validation in that order.
+
+Kit generation uses a MongoDB-backed status record and an in-process background coordinator. Creating a kit returns immediately with `pending` status; the coordinator changes it to `running`, executes the shared pipeline, and persists `completed` or `failed`. The frontend polls the kit detail page while generation is active. This keeps the deployed assignment simple without requiring Redis.
 
 Important engineering decisions
 
@@ -87,6 +126,8 @@ Schedule allocation is deterministic application code.
 External website content is treated as untrusted data, not as instructions.
 
 Partial research failure does not automatically fail a case.
+
+Question coverage repair is bounded to one second-generation pass. Existing questions, including user-edited or pinned items, are preserved during that pass.
 
 User edits must survive regeneration of unrelated or generated sections.
 

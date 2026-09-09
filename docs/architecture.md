@@ -127,6 +127,20 @@ Generation is an asynchronous workflow from the user's point of view. The UI sho
 
 The backend should protect against duplicate generation requests and persist enough state for a kit to be reopened later.
 
+Generation runtime flow
+
+The current deployment uses a MongoDB-backed status record and an in-process background coordinator:
+
+1. `POST /api/kits` validates the request and creates a `pending` record.
+2. The coordinator atomically claims the record and changes it to `running`.
+3. The coordinator invokes the shared interview-kit pipeline.
+4. A successful result is validated and persisted with `completed` status.
+5. A failure is persisted with `failed` status and an error code/message.
+
+The request returns the kit ID immediately. The frontend refreshes the server-rendered detail page with adaptive polling: checks are more frequent during the first 30 seconds, slow down as generation continues, pause when the tab is hidden, and stop after five minutes. This is a server-component refresh, not a full browser reload.
+
+This design is appropriate for the small audience of the hiring assignment. A process restart can interrupt an in-flight generation, so a durable queue remains a future upgrade rather than a current dependency.
+
 Security boundary
 
 External pages and pasted job descriptions are untrusted content.
@@ -137,9 +151,15 @@ validate URLs before fetching
 
 reject private/loopback destinations in production
 
+reject IPv4-mapped private destinations in production
+
 restrict content types and response sizes
 
 set timeouts
+
+restrict API CORS to the configured frontend origin
+
+send security headers and apply API rate limits
 
 rate-limit outbound retrieval
 
@@ -163,3 +183,17 @@ same research/generation/coverage/scheduling pipeline
 kits.json
 
 There is deliberately no separate batch-only implementation.
+
+Deployment shape
+
+For a small live assignment deployment:
+
+Next.js frontend -> Vercel
+
+Express API and in-process coordinator -> Render, Railway, or another persistent Node service
+
+MongoDB -> MongoDB Atlas
+
+LLM -> Google Gemini API
+
+The frontend and backend must share `AUTH_INTERNAL_SECRET`. The backend must configure `FRONTEND_ORIGIN`, `MONGODB_URI`, and `LLM_API_KEY`. A sleeping backend can interrupt generation, so a persistent service is preferred for the demo.

@@ -148,6 +148,42 @@ progress is stored
 
 low-confidence material can be prioritised next
 
+9. Generation coordination tests
+
+Verify:
+
+pending kit becomes running and then completed
+
+pipeline output is persisted to the owning kit
+
+pipeline failure becomes failed with an error code/message
+
+duplicate requests do not start two active generations
+
+frontend status refresh slows down over time
+
+hidden browser tabs pause status requests
+
+status polling stops after its maximum duration
+
+10. Deployment and configuration tests
+
+Verify:
+
+MongoDB passwords with reserved URI characters are percent-encoded
+
+missing LLM credentials fail clearly
+
+frontend and backend use the same internal auth secret
+
+configured CORS origin is accepted and other origins are not reflected
+
+security headers are present
+
+rate limits return a controlled response
+
+production SSRF checks reject private and IPv4-mapped private destinations
+
 Mandatory batch evaluation
 
 The repository must expose:
@@ -249,3 +285,7 @@ npm run evaluate -- --input ... --output ... works
 README explains the design
 
 Public frontend and backend are deployed
+
+Generation coordinator is verified on the deployed backend
+
+Recruiter can create a kit and see it progress to completed or failed
