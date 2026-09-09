@@ -194,6 +194,6 @@ Express API and in-process coordinator -> Render, Railway, or another persistent
 
 MongoDB -> MongoDB Atlas
 
-LLM -> Groq API
+LLM -> OpenAI API
 
-The frontend and backend must share `AUTH_INTERNAL_SECRET`. The backend must configure `FRONTEND_ORIGIN`, `MONGODB_URI`, and `LLM_API_KEY` for Groq. A sleeping backend can interrupt generation, so a persistent service is preferred for the demo.
+The frontend and backend must share `AUTH_INTERNAL_SECRET`. The backend must configure `FRONTEND_ORIGIN`, `MONGODB_URI`, and `LLM_API_KEY` for OpenAI. A sleeping backend can interrupt generation, so a persistent service is preferred for the demo.
