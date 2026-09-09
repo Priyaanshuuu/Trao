@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { OpenAiClient } from "./llm/openai.js";
+import { GeminiClient } from "./llm/gemini.js";
 import { runInterviewKitPipeline, type PipelineDependencies } from "./pipeline/interviewKitPipeline.js";
 import { z } from "zod";
 
@@ -73,7 +73,7 @@ async function main() {
   const parsedInput = evaluationInputSchema.safeParse(JSON.parse(await readFile(inputPath, "utf8")));
   if (!parsedInput.success) throw new Error(`Invalid evaluation input: ${parsedInput.error.message}`);
 
-  const output = await runBatch(parsedInput.data, { generator: new OpenAiClient() });
+  const output = await runBatch(parsedInput.data, { generator: new GeminiClient() });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
 }
 
