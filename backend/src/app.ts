@@ -4,6 +4,7 @@ import { getDatabaseState } from "./db/mongoose.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { requireAuth } from "./middleware/auth.js";
 import type { AuthenticatedRequest } from "./types/auth.js";
+import { createKitRouter } from "./routes/kits.js";
 
 export function createApp() {
   const app = express();
@@ -30,6 +31,8 @@ export function createApp() {
     const { user } = request as AuthenticatedRequest;
     response.json({ user });
   });
+
+  app.use("/api/kits", requireAuth, createKitRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);

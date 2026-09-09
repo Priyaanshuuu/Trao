@@ -14,6 +14,16 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
 
   if (response.headersSent) return;
 
+  if (error?.name === "MongooseServerSelectionError" || error?.name === "MongoServerError") {
+    response.status(503).json({
+      error: {
+        code: "DATABASE_UNAVAILABLE",
+        message: "The kit store is temporarily unavailable.",
+      },
+    });
+    return;
+  }
+
   response.status(500).json({
     error: {
       code: "INTERNAL_SERVER_ERROR",
