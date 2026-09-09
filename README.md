@@ -90,7 +90,7 @@ The same `AUTH_INTERNAL_SECRET` must be present in both frontend and backend env
 
 Live assignment deployment
 
-Deploy the frontend to Vercel and the backend as a persistent Node service on Render or Railway. Use MongoDB Atlas for persistence and configure the Gemini API key on the backend. Set the frontend `BACKEND_URL` to the deployed backend URL and set the backend `FRONTEND_ORIGIN` to the deployed frontend URL.
+Deploy the frontend to Vercel and the backend as a persistent Node service on Render or Railway. Use MongoDB Atlas for persistence and configure the Groq API key on the backend. Set the frontend `BACKEND_URL` to the deployed backend URL and set the backend `FRONTEND_ORIGIN` to the deployed frontend URL.
 
 The live assignment uses the in-process generation coordinator instead of Redis. This is intentionally simpler for a small recruiter audience. A backend restart can interrupt an active generation; BullMQ with Redis or a durable MongoDB worker is the upgrade path if stronger job recovery is required.
 
