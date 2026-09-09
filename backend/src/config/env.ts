@@ -9,7 +9,7 @@ const environmentSchema = z.object({
   AUTH_INTERNAL_SECRET: z.string().min(32),
   LLM_PROVIDER: z.enum(["groq"]).default("groq"),
   LLM_API_KEY: z.string().min(1).optional(),
-  LLM_MODEL: z.string().min(1).default("llama-3.3-70b-versatile"),
+  LLM_MODEL: z.string().min(1).default("openai/gpt-oss-20b"),
   LLM_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   API_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   API_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
