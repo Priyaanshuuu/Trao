@@ -2,6 +2,12 @@ import mongoose, { Model, Schema, model } from "mongoose";
 
 export type KitGenerationStatus = "pending" | "running" | "completed" | "failed";
 
+export interface PracticeProgress {
+  confidence: number | null;
+  completed: boolean;
+  updatedAt: Date;
+}
+
 export interface KitDocument {
   ownerExternalId: string;
   jobDescription: string;
@@ -10,6 +16,7 @@ export interface KitDocument {
   status: KitGenerationStatus;
   kit: Record<string, unknown> | null;
   error: { code: string; message: string } | null;
+  practiceProgress: Record<string, PracticeProgress>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +30,7 @@ const kitSchema = new Schema<KitDocument>(
     status: { type: String, enum: ["pending", "running", "completed", "failed"], required: true },
     kit: { type: Schema.Types.Mixed, default: null },
     error: { type: Schema.Types.Mixed, default: null },
+    practiceProgress: { type: Schema.Types.Mixed, default: {} },
   },
   { timestamps: true },
 );
