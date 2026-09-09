@@ -49,7 +49,7 @@ export class GroqClient implements TextGenerator {
             model: env.LLM_MODEL,
             messages: [{ role: "user", content: prompt }],
             temperature: options.temperature ?? 0.2,
-            max_tokens: options.maxOutputTokens ?? 4_096,
+            max_tokens: options.maxOutputTokens ?? env.LLM_MAX_OUTPUT_TOKENS,
             response_format: { type: "json_object" },
           }),
           signal: AbortSignal.timeout(this.timeoutMs),

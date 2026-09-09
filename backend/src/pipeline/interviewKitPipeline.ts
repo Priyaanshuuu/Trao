@@ -49,7 +49,7 @@ function companyBriefFromResearch(research: CompanyResearchResult) {
 export async function runInterviewKitPipeline(input: PipelineInput, dependencies: PipelineDependencies): Promise<PipelineResult> {
   const research = await (dependencies.research ?? researchCompany)(input.companyUrl);
   const extraction = await extractRequirements(input.jobDescription, dependencies.generator);
-  const researchContext = research.sources.map((source) => `${source.title}: ${source.text}`).join("\n").slice(0, 30_000);
+  const researchContext = research.sources.map((source) => `${source.title}: ${source.text}`).join("\n").slice(0, 12_000);
   const initialQuestions = await generateQuestions(extraction.requirements, dependencies.generator, researchContext);
   const repaired = await repairMustCoverage(extraction.requirements, initialQuestions, dependencies.generator, researchContext);
   const flashcards = await generateFlashcards(extraction.requirements, repaired.questions, dependencies.generator);
