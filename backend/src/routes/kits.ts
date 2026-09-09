@@ -6,6 +6,7 @@ import type { KitDocument } from "../models/Kit.js";
 import { createKitRequestSchema } from "../domain/kitRequest.js";
 import type { AuthenticatedRequest } from "../types/auth.js";
 import { z } from "zod";
+import { generateKitInBackground } from "../pipeline/kitGenerationJob.js";
 
 const practiceUpdateSchema = z.object({
   flashcardId: z.string().regex(/^[a-z][a-z0-9_-]{1,63}$/),
@@ -63,6 +64,7 @@ export function createKitRouter(): Router {
         requestedDays: parsed.data.days,
         status: "pending",
       });
+      void generateKitInBackground(kit._id.toString());
       response.status(202).json({ kit: serializeKit(kit) });
     } catch (error) {
       next(error);
