@@ -134,3 +134,4 @@ export const interviewKitSchema = z.object({
 export type InterviewKit = z.infer<typeof interviewKitSchema>;
 export type Requirement = z.infer<typeof requirementSchema>;
 export type Question = z.infer<typeof questionSchema>;
+export type Flashcard = z.infer<typeof flashcardSchema>;
