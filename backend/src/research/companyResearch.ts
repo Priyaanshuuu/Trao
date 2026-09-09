@@ -41,6 +41,9 @@ export interface ResearchOptions {
 }
 
 function isPrivateIp(address: string): boolean {
+  const mappedIpv4 = address.toLowerCase().match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1];
+  if (mappedIpv4) return isPrivateIp(mappedIpv4);
+
   if (net.isIPv4(address)) {
     const parts = address.split(".").map(Number);
     const [first, second = -1] = parts;

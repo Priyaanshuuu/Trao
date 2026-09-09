@@ -11,6 +11,8 @@ const environmentSchema = z.object({
   LLM_API_KEY: z.string().min(1).optional(),
   LLM_MODEL: z.string().min(1).default("gemini-3.6-flash"),
   LLM_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  API_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
+  API_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
 });
 
 const parsedEnvironment = environmentSchema.safeParse(process.env);
