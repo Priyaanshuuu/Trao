@@ -6,6 +6,7 @@ const environmentSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   FRONTEND_ORIGIN: z.string().url().default("http://localhost:3000"),
   MONGODB_URI: z.string().min(1).optional(),
+  AUTH_INTERNAL_SECRET: z.string().min(32),
 });
 
 const parsedEnvironment = environmentSchema.safeParse(process.env);

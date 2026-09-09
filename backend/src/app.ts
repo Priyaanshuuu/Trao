@@ -2,6 +2,8 @@ import cors from "cors";
 import express from "express";
 import { getDatabaseState } from "./db/mongoose.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { requireAuth } from "./middleware/auth.js";
+import type { AuthenticatedRequest } from "./types/auth.js";
 
 export function createApp() {
   const app = express();
@@ -22,6 +24,11 @@ export function createApp() {
       database: getDatabaseState(),
       timestamp: new Date().toISOString(),
     });
+  });
+
+  app.get("/api/me", requireAuth, (request, response) => {
+    const { user } = request as AuthenticatedRequest;
+    response.json({ user });
   });
 
   app.use(notFoundHandler);
