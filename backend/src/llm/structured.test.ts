@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { z } from "zod";
 import { generateStructured } from "./structured.js";
-import { GroqClient } from "./groq.js";
+import { OpenAiClient } from "./openai.js";
 import { LlmError, type TextGenerator } from "./types.js";
 
 test("parses fenced JSON and validates the requested schema", async () => {
@@ -24,9 +24,9 @@ test("fails clearly after schema validation attempts are exhausted", async () =>
   await assert.rejects(() => generateStructured(generator, "Return an answer", z.object({ answer: z.string() }), { attempts: 2 }), /schema/i);
 });
 
-test("retries transient Groq responses and returns generated text", async () => {
+test("retries transient OpenAI responses and returns generated text", async () => {
   let calls = 0;
-  const client = new GroqClient({
+  const client = new OpenAiClient({
     apiKey: "test-key",
     fetchImpl: async () => ++calls === 1
       ? new Response(JSON.stringify({ error: { message: "busy" } }), { status: 503 })
@@ -40,6 +40,6 @@ test("retries transient Groq responses and returns generated text", async () => 
 });
 
 test("reports missing provider configuration", async () => {
-  const client = new GroqClient({ apiKey: "", retries: 1 });
+  const client = new OpenAiClient({ apiKey: "", retries: 1 });
   await assert.rejects(() => client.generateText("Return JSON"), (error: unknown) => error instanceof LlmError && error.code === "LLM_NOT_CONFIGURED");
 });

@@ -1,12 +1,12 @@
 import { env } from "../config/env.js";
 import { LlmError, type TextGenerationOptions, type TextGenerator } from "./types.js";
 
-interface GroqResponse {
+interface OpenAiResponse {
   choices?: Array<{ message?: { content?: string | null } }>;
   error?: { message?: string };
 }
 
-export interface GroqClientOptions {
+export interface OpenAiClientOptions {
   fetchImpl?: (input: string, init?: RequestInit) => Promise<Response>;
   apiKey?: string;
   timeoutMs?: number;
@@ -18,14 +18,14 @@ function retryableStatus(status: number): boolean {
   return status === 408 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
 }
 
-export class GroqClient implements TextGenerator {
+export class OpenAiClient implements TextGenerator {
   private readonly fetchImpl: (input: string, init?: RequestInit) => Promise<Response>;
   private readonly timeoutMs: number;
   private readonly retries: number;
   private readonly retryDelayMs: number;
   private readonly apiKey?: string;
 
-  constructor(options: GroqClientOptions = {}) {
+  constructor(options: OpenAiClientOptions = {}) {
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.apiKey = options.apiKey ?? env.LLM_API_KEY;
     this.timeoutMs = options.timeoutMs ?? env.LLM_TIMEOUT_MS;
@@ -39,7 +39,7 @@ export class GroqClient implements TextGenerator {
     let lastError: unknown;
     for (let attempt = 1; attempt <= this.retries; attempt += 1) {
       try {
-        const response = await this.fetchImpl("https://api.groq.com/openai/v1/chat/completions", {
+        const response = await this.fetchImpl("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -54,12 +54,12 @@ export class GroqClient implements TextGenerator {
           }),
           signal: AbortSignal.timeout(this.timeoutMs),
         });
-        const body = await response.json() as GroqResponse;
+        const body = await response.json() as OpenAiResponse;
         if (!response.ok) {
-          throw new LlmError(`LLM_HTTP_${response.status}`, body.error?.message ?? "Groq request failed.", retryableStatus(response.status));
+          throw new LlmError(`LLM_HTTP_${response.status}`, body.error?.message ?? "OpenAI request failed.", retryableStatus(response.status));
         }
         const text = body.choices?.[0]?.message?.content;
-        if (!text) throw new LlmError("LLM_EMPTY_RESPONSE", "Groq returned no text content.");
+        if (!text) throw new LlmError("LLM_EMPTY_RESPONSE", "OpenAI returned no text content.");
         return text;
       } catch (error) {
         lastError = error;
