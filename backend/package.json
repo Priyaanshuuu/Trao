@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "cors": "^2.8.6",
