@@ -1,12 +1,12 @@
 import { env } from "../config/env.js";
 import { LlmError, type TextGenerationOptions, type TextGenerator } from "./types.js";
 
-interface GeminiResponse {
-  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+interface GroqResponse {
+  choices?: Array<{ message?: { content?: string | null } }>;
   error?: { message?: string };
 }
 
-export interface GeminiClientOptions {
+export interface GroqClientOptions {
   fetchImpl?: (input: string, init?: RequestInit) => Promise<Response>;
   apiKey?: string;
   timeoutMs?: number;
@@ -18,14 +18,14 @@ function retryableStatus(status: number): boolean {
   return status === 408 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
 }
 
-export class GeminiClient implements TextGenerator {
+export class GroqClient implements TextGenerator {
   private readonly fetchImpl: (input: string, init?: RequestInit) => Promise<Response>;
   private readonly timeoutMs: number;
   private readonly retries: number;
   private readonly retryDelayMs: number;
   private readonly apiKey?: string;
 
-  constructor(options: GeminiClientOptions = {}) {
+  constructor(options: GroqClientOptions = {}) {
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.apiKey = options.apiKey ?? env.LLM_API_KEY;
     this.timeoutMs = options.timeoutMs ?? env.LLM_TIMEOUT_MS;
@@ -36,29 +36,30 @@ export class GeminiClient implements TextGenerator {
   async generateText(prompt: string, options: TextGenerationOptions = {}): Promise<string> {
     if (!this.apiKey) throw new LlmError("LLM_NOT_CONFIGURED", "LLM_API_KEY is not configured.");
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(env.LLM_MODEL)}:generateContent?key=${encodeURIComponent(this.apiKey)}`;
     let lastError: unknown;
     for (let attempt = 1; attempt <= this.retries; attempt += 1) {
       try {
-        const response = await this.fetchImpl(endpoint, {
+        const response = await this.fetchImpl("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${this.apiKey}`,
+          },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: options.temperature ?? 0.2,
-              maxOutputTokens: options.maxOutputTokens ?? 4_096,
-              responseMimeType: "application/json",
-            },
+            model: env.LLM_MODEL,
+            messages: [{ role: "user", content: prompt }],
+            temperature: options.temperature ?? 0.2,
+            max_tokens: options.maxOutputTokens ?? 4_096,
+            response_format: { type: "json_object" },
           }),
           signal: AbortSignal.timeout(this.timeoutMs),
         });
-        const body = await response.json() as GeminiResponse;
+        const body = await response.json() as GroqResponse;
         if (!response.ok) {
-          throw new LlmError(`LLM_HTTP_${response.status}`, body.error?.message ?? "Gemini request failed.", retryableStatus(response.status));
+          throw new LlmError(`LLM_HTTP_${response.status}`, body.error?.message ?? "Groq request failed.", retryableStatus(response.status));
         }
-        const text = body.candidates?.[0]?.content?.parts?.find((part) => typeof part.text === "string")?.text;
-        if (!text) throw new LlmError("LLM_EMPTY_RESPONSE", "Gemini returned no text content.");
+        const text = body.choices?.[0]?.message?.content;
+        if (!text) throw new LlmError("LLM_EMPTY_RESPONSE", "Groq returned no text content.");
         return text;
       } catch (error) {
         lastError = error;

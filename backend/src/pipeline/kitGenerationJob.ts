@@ -1,4 +1,4 @@
-import { GeminiClient } from "../llm/gemini.js";
+import { GroqClient } from "../llm/groq.js";
 import { Kit } from "../models/Kit.js";
 import { runInterviewKitPipeline } from "./interviewKitPipeline.js";
 
@@ -26,7 +26,7 @@ export async function generateKitInBackground(kitId: string): Promise<void> {
         companyUrl: kit.companyUrl,
         days: kit.requestedDays,
       },
-      { generator: new GeminiClient() },
+      { generator: new GroqClient() },
     );
     await Kit.updateOne(
       { _id: kit._id, status: "running" },
