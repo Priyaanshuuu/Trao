@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import type { HydratedDocument } from "mongoose";
 import type { RequestHandler, Router } from "express";
 import { Router as createRouter } from "express";
@@ -58,7 +57,6 @@ export function createKitRouter(): Router {
       }
 
       const kit = await Kit.create({
-        _id: randomUUID(),
         ownerExternalId: userId,
         jobDescription: parsed.data.jobDescription,
         companyUrl: parsed.data.companyUrl,
