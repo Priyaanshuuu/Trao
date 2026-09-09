@@ -28,7 +28,7 @@ TypeScript is used across the application to make the kit schema, service interf
 
 LLM
 
-Use OpenAI through its chat-completions API. The default model is `gpt-4o-mini`, selected for its structured JSON response support and practical cost for this assignment. The implementation keeps the provider behind a `TextGenerator` interface so the model can be replaced without changing the pipeline.
+Use Google Gemini through the Generative Language REST API. The default model is `gemini-3.7-flash`, selected for its free-tier availability and structured JSON response support. The implementation keeps the provider behind a `TextGenerator` interface so the model can be replaced without changing the pipeline.
 
 The backend reads `LLM_API_KEY`, `LLM_MODEL`, and `LLM_TIMEOUT_MS` from its environment. Provider calls retry transient HTTP failures with bounded exponential backoff. Generated JSON is parsed and validated against the requested Zod schema before it can reach a domain service.
 
@@ -50,7 +50,7 @@ The LLM is not trusted with deterministic decisions such as coverage calculation
 
 Generation configuration and failure behavior
 
-The backend uses `LLM_API_KEY`, `LLM_MODEL`, and `LLM_TIMEOUT_MS`. The current default is OpenAI `gpt-4o-mini` through the chat-completions API. Provider responses are retried with bounded backoff for transient failures, while malformed JSON and schema mismatches receive a bounded repair attempt.
+The backend uses `LLM_API_KEY`, `LLM_MODEL`, and `LLM_TIMEOUT_MS`. The current default is Gemini `gemini-3.7-flash` through the Generative Language REST API. Provider responses are retried with bounded backoff for transient failures, while malformed JSON and schema mismatches receive a bounded repair attempt.
 
 The generation request is asynchronous from the user's perspective. MongoDB stores the kit status and result, and an in-process coordinator runs the pipeline after the initial request returns. This avoids Redis for the small assignment deployment. The design can later move the coordinator to a MongoDB worker or BullMQ/Redis without changing the pipeline services.
 
