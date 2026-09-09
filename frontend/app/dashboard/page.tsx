@@ -23,7 +23,10 @@ async function createKit(formData: FormData) {
       days: formData.get("days"),
     }),
   });
-  if (response.ok) redirect("/dashboard");
+  if (response.ok) {
+    const body = await response.json() as { kit?: { id?: string } };
+    if (body.kit?.id) redirect(`/dashboard/${body.kit.id}`);
+  }
   redirect(`/dashboard?error=${encodeURIComponent("We could not create that kit. Check the fields and try again.")}`);
 }
 
